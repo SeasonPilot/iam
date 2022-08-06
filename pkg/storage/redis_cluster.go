@@ -903,7 +903,7 @@ func (r *RedisCluster) StartPubSubHandler(channel string, callback func(interfac
 		return errors.New("redis connection failed")
 	}
 
-	pubsub := client.Subscribe(channel)
+	pubsub := client.Subscribe(channel) // 订阅Redis的 iam.cluster.notifications channel
 	defer pubsub.Close()
 
 	if _, err := pubsub.Receive(); err != nil {
@@ -913,7 +913,7 @@ func (r *RedisCluster) StartPubSubHandler(channel string, callback func(interfac
 	}
 
 	for msg := range pubsub.Channel() {
-		callback(msg)
+		callback(msg) // 注册一个回调函数  handleRedisEvent
 	}
 
 	return nil

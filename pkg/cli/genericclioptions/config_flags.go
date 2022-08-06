@@ -99,7 +99,7 @@ func (f *ConfigFlags) ToRawIAMConfigLoader() clientcmd.ClientConfig {
 
 func (f *ConfigFlags) toRawIAMConfigLoader() clientcmd.ClientConfig {
 	config := clientcmd.NewConfig()
-	if err := viper.Unmarshal(&config); err != nil {
+	if err := viper.Unmarshal(&config); err != nil { // 将viper中存储的配置解 析到 clientcmd.Config 类型的结构体变量中
 		panic(err)
 	}
 

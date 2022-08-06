@@ -37,12 +37,12 @@ func NewLoader(ctx context.Context, loader Loader) *Load {
 
 // Start start a loop service.
 func (l *Load) Start() {
-	go startPubSubLoop()
+	go startPubSubLoop() // 通过StartPubSubHandler函数，订阅Redis的iam.cluster.notifications channel，并注册一个回调函数
 	go l.reloadQueueLoop()
 	// 1s is the minimum amount of time between hot reloads. The
 	// interval counts from the start of one reload to the next.
 	go l.reloadLoop()
-	l.DoReload()
+	l.DoReload() // 密钥和策略同步
 }
 
 func startPubSubLoop() {
@@ -50,7 +50,7 @@ func startPubSubLoop() {
 	cacheStore.Connect()
 	// On message, synchronize
 	for {
-		err := cacheStore.StartPubSubHandler(RedisPubSubChannel, func(v interface{}) {
+		err := cacheStore.StartPubSubHandler(RedisPubSubChannel, func(v interface{}) { // 订阅Redis的iam.cluster.notifications channel，并注册一个回调函数
 			handleRedisEvent(v, nil, nil)
 		})
 		if err != nil {
@@ -69,9 +69,11 @@ func startPubSubLoop() {
 func shouldReload() ([]func(), bool) {
 	requeueLock.Lock()
 	defer requeueLock.Unlock()
+
 	if len(requeue) == 0 {
 		return nil, false
 	}
+
 	n := requeue
 	requeue = []func(){}
 
@@ -79,7 +81,7 @@ func shouldReload() ([]func(), bool) {
 }
 
 func (l *Load) reloadLoop(complete ...func()) {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(1 * time.Second) // 启动一个timer定时器,每隔1秒会检查 requeue 切片是否为空
 	for {
 		select {
 		case <-l.ctx.Done():
@@ -88,12 +90,13 @@ func (l *Load) reloadLoop(complete ...func()) {
 		// startup sequence. We expect to start checking on the first tick after the
 		// gateway is up and running.
 		case <-ticker.C:
-			cb, ok := shouldReload()
-			if !ok {
+			cb, ok := shouldReload() // 检查 requeue 切片是否为空
+			if !ok {                 // 如果 为空
 				continue
 			}
+
 			start := time.Now()
-			l.DoReload()
+			l.DoReload() // 从iam-apiserver中拉取密钥和策略，并缓存在内存 中。
 			for _, c := range cb {
 				// most of the callbacks are nil, we don't want to execute nil functions to
 				// avoid panics.
@@ -111,7 +114,7 @@ func (l *Load) reloadLoop(complete ...func()) {
 
 // reloadQueue used to queue a reload. It's not
 // buffered, as reloadQueueLoop should pick these up immediately.
-var reloadQueue = make(chan func())
+var reloadQueue = make(chan func()) // 主要用来告诉程序，需要完成一次密钥和策略的同步。
 
 var requeueLock sync.Mutex
 
@@ -124,9 +127,9 @@ func (l *Load) reloadQueueLoop(cb ...func()) {
 		select {
 		case <-l.ctx.Done():
 			return
-		case fn := <-reloadQueue:
+		case fn := <-reloadQueue: // 监听 reloadQueue channel
 			requeueLock.Lock()
-			requeue = append(requeue, fn)
+			requeue = append(requeue, fn) // 将消息缓存到 requeue 切片中
 			requeueLock.Unlock()
 			log.Info("Reload queued")
 			if len(cb) != 0 {
@@ -141,7 +144,7 @@ func (l *Load) DoReload() {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
-	if err := l.loader.Reload(); err != nil {
+	if err := l.loader.Reload(); err != nil { // 从iam-apiserver 中同步密钥和策略信息到iam-authz-server缓存中。
 		log.Errorf("faild to refresh target storage: %s", err.Error())
 	}
 

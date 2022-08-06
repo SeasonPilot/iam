@@ -90,7 +90,7 @@ func (o *UpdateOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []s
 		return cmdutil.UsageErrorf(cmd, updateUsageErrStr)
 	}
 
-	o.Name = args[0]
+	o.Name = args[0] // 补全 Name 和 iamclient
 	o.iamclient, err = f.IAMClient()
 	if err != nil {
 		return err

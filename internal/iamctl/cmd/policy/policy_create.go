@@ -93,11 +93,11 @@ func (o *CreateOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []s
 		},
 	}
 
-	clientConfig, err := f.ToRESTConfig()
+	clientConfig, err := f.ToRESTConfig() // 生成配置
 	if err != nil {
 		return err
 	}
-	o.Client, err = apiclientv1.NewForConfig(clientConfig)
+	o.Client, err = apiclientv1.NewForConfig(clientConfig) // 基于 rest.Config 类型的配置变量 创建RESTful API客户端和SDK的客户端
 	if err != nil {
 		return err
 	}

@@ -49,6 +49,7 @@ func handleRedisEvent(v interface{}, handled func(NotificationCommand), reloaded
 	}
 
 	notif := Notification{}
+	// 将消息解析为Notification类型的消息
 	if err := json.Unmarshal([]byte(message.Payload), &notif); err != nil {
 		log.Errorf("Unmarshalling message body failed, malformed: ", err)
 
@@ -56,10 +57,10 @@ func handleRedisEvent(v interface{}, handled func(NotificationCommand), reloaded
 	}
 	log.Infow("receive redis message", "command", notif.Command, "payload", message.Payload)
 
-	switch notif.Command {
+	switch notif.Command { // 判断Command的值
 	case NoticePolicyChanged, NoticeSecretChanged:
 		log.Info("Reloading secrets and policies")
-		reloadQueue <- reloaded
+		reloadQueue <- reloaded // 向 reloadQueue channel中 写入一个回调函数。  reloadQueue 主要用来告诉程序，需要完成一次密钥和策略的同步。
 	default:
 		log.Warnf("Unknown notification command: %q", notif.Command)
 

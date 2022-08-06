@@ -105,14 +105,14 @@ func (c *Cache) Reload() error {
 	defer c.lock.Unlock()
 
 	// reload secrets
-	secrets, err := c.cli.Secrets().List()
+	secrets, err := c.cli.Secrets().List() // 调用仓库层Secret和Policy的List方法来获取密钥和策略列表。
 	if err != nil {
 		return errors.Wrap(err, "list secrets failed")
 	}
 
 	c.secrets.Clear()
 	for key, val := range secrets {
-		c.secrets.Set(key, val, 1)
+		c.secrets.Set(key, val, 1) // 将获取到的密钥和策略列表缓存在 ristretto 类型的 Cache 中
 	}
 
 	// reload policies

@@ -148,7 +148,7 @@ func (s *authzServer) initialize() error {
 		return errors.Wrap(err, "get cache instance failed")
 	}
 
-	load.NewLoader(ctx, cacheIns).Start()
+	load.NewLoader(ctx, cacheIns).Start() // 创建并启动一个Load服务
 
 	// start analytics service
 	if s.analyticsOptions.Enable {

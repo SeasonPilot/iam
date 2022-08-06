@@ -94,26 +94,26 @@ func (r *Analytics) Start() {
 	atomic.SwapUint32(&r.shouldStop, 0)
 	for i := 0; i < r.poolSize; i++ {
 		r.poolWg.Add(1)
-		go r.recordWorker()
+		go r.recordWorker() // 创建了一批worker
 	}
 }
 
 // Stop stop the analytics service.
 func (r *Analytics) Stop() {
 	// flag to stop sending records into channel
-	atomic.SwapUint32(&r.shouldStop, 1)
+	atomic.SwapUint32(&r.shouldStop, 1) // 停止接收新的授权日志
 
 	// close channel to stop workers
 	close(r.recordsChan)
 
 	// wait for all workers to be done
-	r.poolWg.Wait()
+	r.poolWg.Wait() // 并等待正在上报的数据上报完成
 }
 
 // RecordHit will store an AnalyticsRecord in Redis.
 func (r *Analytics) RecordHit(record *AnalyticsRecord) error {
 	// check if we should stop sending records 1st
-	if atomic.LoadUint32(&r.shouldStop) > 0 {
+	if atomic.LoadUint32(&r.shouldStop) > 0 { // 在缓存前，需要判断上报服务是否在优雅关停中，如果在关停中，则丢弃该消息
 		return nil
 	}
 
@@ -136,9 +136,9 @@ func (r *Analytics) recordWorker() {
 	for {
 		var readyToSend bool
 		select {
-		case record, ok := <-r.recordsChan:
+		case record, ok := <-r.recordsChan: // 从 recordsChan 中读取授权日志并存入 recordsBuffer中
 			// check if channel was closed and it is time to exit from worker
-			if !ok {
+			if !ok { // 优雅关停
 				// send what is left in buffer
 				r.store.AppendToSetPipelined(analyticsKeyName, recordsBuffer)
 
@@ -147,7 +147,7 @@ func (r *Analytics) recordWorker() {
 
 			// we have new record - prepare it and add to buffer
 
-			if encoded, err := msgpack.Marshal(record); err != nil {
+			if encoded, err := msgpack.Marshal(record); err != nil { // 为了提高传输速率，这里将日志内容编码为msgpack格式后再传输。
 				log.Errorf("Error encoding analytics data: %s", err.Error())
 			} else {
 				recordsBuffer = append(recordsBuffer, encoded)
@@ -156,15 +156,15 @@ func (r *Analytics) recordWorker() {
 			// identify that buffer is ready to be sent
 			readyToSend = uint64(len(recordsBuffer)) == r.workerBufferSize
 
-		case <-time.After(time.Duration(r.recordsBufferFlushInterval) * time.Millisecond):
+		case <-time.After(time.Duration(r.recordsBufferFlushInterval) * time.Millisecond): // 超时投递
 			// nothing was received for that period of time
 			// anyways send whatever we have, don't hold data too long in buffer
 			readyToSend = true
 		}
 
 		// send data to Redis and reset buffer
-		if len(recordsBuffer) > 0 && (readyToSend || time.Since(lastSentTS) >= recordsBufferForcedFlushInterval) {
-			r.store.AppendToSetPipelined(analyticsKeyName, recordsBuffer)
+		if len(recordsBuffer) > 0 && (readyToSend || time.Since(lastSentTS) >= recordsBufferForcedFlushInterval) { // 当recordsBuffer存满或者达到投递最大时间后
+			r.store.AppendToSetPipelined(analyticsKeyName, recordsBuffer) // 将记录批量发送给Redis
 			recordsBuffer = recordsBuffer[:0]
 			lastSentTS = time.Now()
 		}

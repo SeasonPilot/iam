@@ -38,7 +38,7 @@ func (s *secrets) List() (map[string]*pb.SecretInfo, error) {
 	err := retry.Do(
 		func() error {
 			var listErr error
-			resp, listErr = s.cli.ListSecrets(context.Background(), req)
+			resp, listErr = s.cli.ListSecrets(context.Background(), req) // 仓库层是通过执行gRPC请求，从iam-apiserver中获取密钥和策略列表。
 			if listErr != nil {
 				return listErr
 			}

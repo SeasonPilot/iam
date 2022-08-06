@@ -31,7 +31,7 @@ func NewAuthorizer(authorizationClient AuthorizationInterface) *Authorizer {
 func (a *Authorizer) Authorize(request *ladon.Request) *authzv1.Response {
 	log.Debug("authorize request", log.Any("request", request))
 
-	if err := a.warden.IsAllowed(request); err != nil {
+	if err := a.warden.IsAllowed(request); err != nil { // 资源访问授权
 		return &authzv1.Response{
 			Denied: true,
 			Reason: err.Error(),

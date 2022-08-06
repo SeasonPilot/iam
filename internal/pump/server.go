@@ -71,16 +71,16 @@ func (s *pumpServer) PrepareRun() preparedPumpServer {
 }
 
 func (s preparedPumpServer) Run(stopCh <-chan struct{}) error {
-	ticker := time.NewTicker(time.Duration(s.secInterval) * time.Second)
+	ticker := time.NewTicker(time.Duration(s.secInterval) * time.Second) // 定期(通过 配置 purge-delay 设置轮训时间)从 Redis 中获取所有数据
 	defer ticker.Stop()
 
 	log.Info("Now run loop to clean data from redis")
 	for {
 		select {
 		case <-ticker.C:
-			s.pump()
+			s.pump() // 消费逻辑
 		// exit consumption cycle when receive SIGINT and SIGTERM signal
-		case <-stopCh:
+		case <-stopCh: // 优雅关停
 			log.Info("stop purge loop")
 
 			return nil
@@ -111,7 +111,7 @@ func (s *pumpServer) pump() {
 
 	for i, v := range analyticsValues {
 		decoded := analytics.AnalyticsRecord{}
-		err := msgpack.Unmarshal([]byte(v.(string)), &decoded)
+		err := msgpack.Unmarshal([]byte(v.(string)), &decoded) // 解压
 		log.Debugf("Decoded Record: %v", decoded)
 		if err != nil {
 			log.Errorf("Couldn't unmarshal analytics data: %s", err.Error())
@@ -227,7 +227,7 @@ func execPumpWriting(wg *sync.WaitGroup, pmp pumps.Pump, keys *[]interface{}, pu
 	go func(ch chan error, ctx context.Context, pmp pumps.Pump, keys *[]interface{}) {
 		filteredKeys := filterData(pmp, *keys)
 
-		ch <- pmp.WriteData(ctx, filteredKeys)
+		ch <- pmp.WriteData(ctx, filteredKeys) // 写入 数据
 	}(ch, ctx, pmp, keys)
 
 	select {
