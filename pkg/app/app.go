@@ -90,7 +90,7 @@ func WithOptions(opt CliOptions) Option {
 	}
 }
 
-// RunFunc defines the application's startup callback function.
+// RunFunc defines the application's startup callback function.  定义应用程序的启动回调函数。
 type RunFunc func(basename string) error
 
 // WithRunFunc is used to set the application startup callback function option.
@@ -169,6 +169,7 @@ func NewApp(name string, basename string, opts ...Option) *App {
 	return a
 }
 
+// 构建 cmd
 func (a *App) buildCommand() {
 	cmd := cobra.Command{
 		Use:   FormatBaseName(a.basename),
@@ -220,7 +221,7 @@ func (a *App) buildCommand() {
 
 // Run is used to launch the application.
 func (a *App) Run() {
-	if err := a.cmd.Execute(); err != nil {
+	if err := a.cmd.Execute(); err != nil { // 执行cmd   cobra.Command
 		fmt.Printf("%v %v\n", color.RedString("Error:"), err)
 		os.Exit(1)
 	}
@@ -240,11 +241,11 @@ func (a *App) runCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	if !a.noConfig {
-		if err := viper.BindPFlags(cmd.Flags()); err != nil {
+		if err := viper.BindPFlags(cmd.Flags()); err != nil { // 将完整 标志集 绑定到 配置
 			return err
 		}
 
-		if err := viper.Unmarshal(a.options); err != nil {
+		if err := viper.Unmarshal(a.options); err != nil { // unmarshals 配置文件到结构体。  在这步把yaml中的配置写到了 options 中。
 			return err
 		}
 	}
@@ -263,7 +264,7 @@ func (a *App) runCommand(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	// run application
+	// run application   真正运行应用程序
 	if a.runFunc != nil {
 		return a.runFunc(a.basename)
 	}

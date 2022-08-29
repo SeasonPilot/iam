@@ -36,7 +36,7 @@ func addConfigFlag(basename string, fs *pflag.FlagSet) {
 	viper.SetEnvPrefix(strings.Replace(strings.ToUpper(basename), "-", "_", -1))
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 
-	cobra.OnInitialize(func() {
+	cobra.OnInitialize(func() { // 当 Execute 被调用时执行
 		if cfgFile != "" {
 			viper.SetConfigFile(cfgFile)
 		} else {

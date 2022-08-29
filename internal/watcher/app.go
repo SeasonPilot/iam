@@ -21,12 +21,12 @@ Find more iam-pump information at:
 // NewApp creates an App object with default parameters.
 func NewApp(basename string) *app.App {
 	opts := options.NewOptions()
-	application := app.NewApp("IAM watcher server",
+	application := app.NewApp("IAM watcher server", // 调用公共包new 一个应用实例
 		basename,
 		app.WithOptions(opts),
 		app.WithDescription(commandDesc),
 		app.WithDefaultValidArgs(),
-		app.WithRunFunc(run(opts)),
+		app.WithRunFunc(run(opts)), // 设置应用程序 启动回调函数 选项
 	)
 
 	return application
