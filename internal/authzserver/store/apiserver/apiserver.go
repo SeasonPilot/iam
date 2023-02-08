@@ -32,7 +32,7 @@ var (
 	once             sync.Once
 )
 
-// GetAPIServerFactoryOrDie return cache instance and panics on any error.
+// GetAPIServerFactoryOrDie return cache instance and panics on any error.  构造函数.
 func GetAPIServerFactoryOrDie(address string, clientCA string) store.Factory {
 	once.Do(func() {
 		var (
