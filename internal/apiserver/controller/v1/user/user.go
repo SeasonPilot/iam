@@ -11,7 +11,7 @@ import (
 
 // UserController create a user handler used to handle request for user resource.
 type UserController struct {
-	srv srvv1.Service
+	srv srvv1.Service // 组合业务层的接口
 }
 
 // NewUserController creates a user handler.

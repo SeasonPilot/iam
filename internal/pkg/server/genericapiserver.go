@@ -37,7 +37,7 @@ type GenericAPIServer struct {
 	// gracefully shutdown returns.
 	ShutdownTimeout time.Duration
 
-	*gin.Engine
+	*gin.Engine     // 继承
 	healthz         bool
 	enableMetrics   bool
 	enableProfiling bool

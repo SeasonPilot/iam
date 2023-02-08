@@ -96,6 +96,7 @@ func newAutoAuth() middleware.AuthStrategy {
 	return auth.NewAutoStrategy(newBasicAuth().(auth.BasicStrategy), newJWTAuth().(auth.JWTStrategy))
 }
 
+// Authenticator 函数从HTTP Authorization Header中获取用户名和 密码，并校验密码是否合法
 func authenticator() func(c *gin.Context) (interface{}, error) {
 	return func(c *gin.Context) (interface{}, error) {
 		var login loginInfo
@@ -203,6 +204,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 	}
 }
 
+// authorizator 函数返回了一个匿名函数，匿名函数在认证成功后，会打印一条认证成功 日志。
 func authorizator() func(data interface{}, c *gin.Context) bool {
 	return func(data interface{}, c *gin.Context) bool {
 		if v, ok := data.(string); ok {

@@ -49,21 +49,23 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 	gs := shutdown.New()
 	gs.AddShutdownManager(posixsignal.NewPosixSignalManager())
 
+	// 根据应用配置，创建 HTTP 服务器所使用的配置
 	genericConfig, err := buildGenericConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-
+	// 根据应用配置，创建 GRPC 服务器所使用的配置
 	extraConfig, err := buildExtraConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
+	// 首先补全配置，再基于补全后的配置，New一个HTTP/GRPC 服务实例
 	genericServer, err := genericConfig.Complete().New()
 	if err != nil {
 		return nil, err
 	}
-	extraServer, err := extraConfig.complete().New()
+	extraServer, err := extraConfig.complete().New() // 创建Web服务实例
 	if err != nil {
 		return nil, err
 	}

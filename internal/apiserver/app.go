@@ -33,16 +33,17 @@ func NewApp(basename string) *app.App {
 	return application
 }
 
+// 应用的启动函数
 func run(opts *options.Options) app.RunFunc {
 	return func(basename string) error {
-		log.Init(opts.Log)
+		log.Init(opts.Log) // 初始化应用
 		defer log.Flush()
 
-		cfg, err := config.CreateConfigFromOptions(opts)
+		cfg, err := config.CreateConfigFromOptions(opts) // 构建应用配置
 		if err != nil {
 			return err
 		}
 
-		return Run(cfg)
+		return Run(cfg) // 启动服务
 	}
 }

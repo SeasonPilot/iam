@@ -140,6 +140,7 @@ func WithValidArgs(args cobra.PositionalArgs) Option {
 // WithDefaultValidArgs set default validation function to valid non-flag arguments.
 func WithDefaultValidArgs() Option {
 	return func(a *App) {
+
 		a.args = func(cmd *cobra.Command, args []string) error {
 			for _, arg := range args {
 				if len(arg) > 0 {
@@ -169,7 +170,7 @@ func NewApp(name string, basename string, opts ...Option) *App {
 	return a
 }
 
-// 构建 cmd
+// 构建 cmd.  构建命令行参数
 func (a *App) buildCommand() {
 	cmd := cobra.Command{
 		Use:   FormatBaseName(a.basename),
@@ -192,15 +193,15 @@ func (a *App) buildCommand() {
 		}
 		cmd.SetHelpCommand(helpCommand(FormatBaseName(a.basename)))
 	}
-	if a.runFunc != nil {
-		cmd.RunE = a.runCommand
+	if a.runFunc != nil { // 赋值给 cmd.RunE
+		cmd.RunE = a.runCommand // 代理模式、闭包？  runFunc 的签名不符合 RunE，包了一层后赋值给 cmd.  a.runFunc  a.runCommand 直接的关系是什么？  封装？
 	}
 
 	var namedFlagSets cliflag.NamedFlagSets
-	if a.options != nil {
-		namedFlagSets = a.options.Flags()
-		fs := cmd.Flags()
-		for _, f := range namedFlagSets.FlagSets {
+	if a.options != nil { // 将option的Flag 添加到cobra实例的FlagSet中
+		namedFlagSets = a.options.Flags()          // 创建并返回了一批 FlagSet
+		fs := cmd.Flags()                          // 返回的是指针
+		for _, f := range namedFlagSets.FlagSets { // 通过一个 for 循环，将 namedFlagSets 中保存的 FlagSet 添加到 Cobra 应用框架中的 FlagSet 中。
 			fs.AddFlagSet(f)
 		}
 	}
@@ -241,7 +242,7 @@ func (a *App) runCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	if !a.noConfig {
-		if err := viper.BindPFlags(cmd.Flags()); err != nil { // 将完整 标志集 绑定到 配置
+		if err := viper.BindPFlags(cmd.Flags()); err != nil { // 将完整 标志集 绑定到 配置；将标志集的内容 绑定 到 key；将配置文件中的配置项和命令行参数绑定
 			return err
 		}
 
@@ -274,16 +275,16 @@ func (a *App) runCommand(cmd *cobra.Command, args []string) error {
 
 func (a *App) applyOptionRules() error {
 	if completeableOptions, ok := a.options.(CompleteableOptions); ok {
-		if err := completeableOptions.Complete(); err != nil {
+		if err := completeableOptions.Complete(); err != nil { // 判断选项是否可补全
 			return err
 		}
 	}
 
-	if errs := a.options.Validate(); len(errs) != 0 {
+	if errs := a.options.Validate(); len(errs) != 0 { // 校验 参数是否合法
 		return errors.NewAggregate(errs)
 	}
 
-	if printableOptions, ok := a.options.(PrintableOptions); ok && !a.silence {
+	if printableOptions, ok := a.options.(PrintableOptions); ok && !a.silence { // 判断选项是否可打印
 		log.Infof("%v Config: `%s`", progressMessage, printableOptions.String())
 	}
 
