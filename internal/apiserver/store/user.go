@@ -11,6 +11,7 @@ import (
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 )
 
+// 产品抽象类或接口
 // UserStore defines the user storage interface.
 type UserStore interface {
 	Create(ctx context.Context, user *v1.User, opts metav1.CreateOptions) error

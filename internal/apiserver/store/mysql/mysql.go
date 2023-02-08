@@ -18,6 +18,7 @@ import (
 	"github.com/marmotedu/iam/pkg/db"
 )
 
+// 具体产品工厂
 type datastore struct {
 	db *gorm.DB
 
@@ -26,6 +27,7 @@ type datastore struct {
 	// db *gorm.DB
 }
 
+// 新建 Users 客户端; 返回值类型为 产品抽象类或接口
 func (ds *datastore) Users() store.UserStore {
 	return newUsers(ds)
 }

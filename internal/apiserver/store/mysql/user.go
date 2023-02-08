@@ -17,10 +17,12 @@ import (
 	"github.com/marmotedu/iam/internal/pkg/util/gormutil"
 )
 
+// 具体产品实现
 type users struct {
 	db *gorm.DB
 }
 
+// 实例化产品不通过这个函数对外暴露；是通过 工厂方法 对外暴露的,func (ds *datastore) Users() store.UserStore {}; internal/apiserver/store/mysql/mysql.go:31
 func newUsers(ds *datastore) *users {
 	return &users{ds.db}
 }

@@ -8,6 +8,7 @@ package store
 
 var client Factory
 
+// 抽象工厂;感觉 Factory 是 抽象工厂 模式
 // Factory defines the iam platform storage interface.
 type Factory interface {
 	Users() UserStore
