@@ -82,7 +82,7 @@ func (s preparedWatcherServer) Run() error {
 	}
 
 	log.Info("star to run cron jobs.")
-	s.cron.Start()
+	s.cron.Start() // 启动计划任务
 
 	// blocking here via channel to prevents the process exit.
 	<-stopCh

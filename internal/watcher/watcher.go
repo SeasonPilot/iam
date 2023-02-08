@@ -41,7 +41,7 @@ func newWatchJob(redisOptions *genericoptions.RedisOptions, watcherOptions *opti
 
 	rs := redsync.New(goredis.NewPool(client))
 
-	cronjob := cron.New(
+	cronjob := cron.New( // 创建一个cron实例
 		cron.WithSeconds(),
 		cron.WithChain(cron.SkipIfStillRunning(logger), cron.Recover(logger)),
 	)
@@ -53,7 +53,7 @@ func newWatchJob(redisOptions *genericoptions.RedisOptions, watcherOptions *opti
 	}
 }
 
-func (w *watchJob) addWatchers() *watchJob {
+func (w *watchJob) addWatchers() *watchJob { // 将注册的 cleanWatcher 实例添加到 Cron // 添加定时任务
 	for name, watch := range watcher.ListWatchers() {
 		// log with `{"watcher": "counter"}` key-value to distinguish which watcher the log comes from.
 		//nolint: golint,staticcheck
