@@ -49,12 +49,12 @@ ifneq ($(shell $(GO) version | grep -q -E '\bgo($(GO_SUPPORTED_VERSIONS))\b' && 
 	$(error unsupported go version. Please make install one of the following supported version: '$(GO_SUPPORTED_VERSIONS)')
 endif
 
-.PHONY: go.build.%
+.PHONY: go.build.%   # 补全后的命令：go.build.linux_amd64.iamctl
 go.build.%:
-	$(eval COMMAND := $(word 2,$(subst ., ,$*)))
-	$(eval PLATFORM := $(word 1,$(subst ., ,$*)))
-	$(eval OS := $(word 1,$(subst _, ,$(PLATFORM))))
-	$(eval ARCH := $(word 2,$(subst _, ,$(PLATFORM))))
+	$(eval COMMAND := $(word 2,$(subst ., ,$*)))  # iamctl
+	$(eval PLATFORM := $(word 1,$(subst ., ,$*)))  # linux_amd64
+	$(eval OS := $(word 1,$(subst _, ,$(PLATFORM)))) # linux
+	$(eval ARCH := $(word 2,$(subst _, ,$(PLATFORM)))) # amd64
 	@echo "===========> Building binary $(COMMAND) $(VERSION) for $(OS) $(ARCH)"
 	@mkdir -p $(OUTPUT_DIR)/platforms/$(OS)/$(ARCH)
 	@CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) $(GO) build $(GO_BUILD_FLAGS) -o $(OUTPUT_DIR)/platforms/$(OS)/$(ARCH)/$(COMMAND)$(GO_OUT_EXT) $(ROOT_PACKAGE)/cmd/$(COMMAND)
