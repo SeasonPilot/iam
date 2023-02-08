@@ -18,6 +18,8 @@ import (
 	"github.com/marmotedu/iam/pkg/log"
 )
 
+// 产品抽象类或接口
+
 // UserSrv defines functions used to handle user request.
 type UserSrv interface {
 	Create(ctx context.Context, user *v1.User, opts metav1.CreateOptions) error
@@ -29,6 +31,8 @@ type UserSrv interface {
 	ListWithBadPerformance(ctx context.Context, opts metav1.ListOptions) (*v1.UserList, error)
 	ChangePassword(ctx context.Context, user *v1.User) error
 }
+
+// 具体产品实现
 
 type userService struct {
 	store store.Factory
